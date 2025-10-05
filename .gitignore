@@ -1,0 +1,27 @@
+# --- Zig build artifacts ---
+zig-out/
+.zig-cache/
+
+# --- OS-specific junk ---
+.DS_Store
+Thumbs.db
+
+# --- Editor / IDE files ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# --- Build tools / temp files ---
+*.o
+*.obj
+*.exe
+*.a
+*.so
+*.dll
+*.log
+
+# --- Misc ---
+*.tmp
+*.lock
