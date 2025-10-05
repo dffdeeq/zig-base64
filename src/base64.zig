@@ -27,7 +27,7 @@ pub const Base64 = struct {
         allocator: std.mem.Allocator, 
         input: []const u8
         ) ![]u8 {
-        const size = try Base64._encode_length(input);
+        const size = try Base64._calc_encode_length(input);
         var out = try allocator.alloc(u8, size);
         if (size == 0) return out;
 
@@ -69,8 +69,8 @@ pub const Base64 = struct {
         allocator: std.mem.Allocator, 
         input: []const u8
         ) ![]u8 {
-            const size = Base64._decode_length(input);
-            var out = allocator.alloc(u8, size);
+            const size = try Base64._calc_decode_length(input);
+            var out = try allocator.alloc(u8, size);
             if (size == 0) return out;
 
             var buf = [4]u8{0, 0, 0, 0};
@@ -78,21 +78,21 @@ pub const Base64 = struct {
             var iout: u64 = 0;
 
             for (0..input.len) |i| {
-                buf[i] = self._char_index(input[i]);
+                buf[count] = self._char_index(input[i]);
                 count += 1;
                 if (count == 4) {
                     out[iout] = (buf[0] << 2) | (buf[1] >> 4);
-                    out[iout + 1] = (buf[1] << 4) | (buf[2] >> 2);
-                    out[iout + 2] = (buf[2] << 6) | buf[3];
+                    if (buf[2] != 64) out[iout + 1] = (buf[1] << 4) | (buf[2] >> 2);
+                    if (buf[3] != 64) out[iout + 2] = (buf[2] << 6) | buf[3];
+                    iout += 3;
+                    count = 0;
                 }
-                iout += 3;
-                count = 0;
             }
 
             return out;
         }
 
-    pub fn _encode_length(input: []const u8) !usize {
+    pub fn _calc_encode_length(input: []const u8) !usize {
         if (input.len == 0) return 0;
         if (input.len < 3) return 4;
         
@@ -102,7 +102,7 @@ pub const Base64 = struct {
         return n_groups * 4;
     }
 
-    pub fn _decode_length(input: []const u8) !usize {
+    pub fn _calc_decode_length(input: []const u8) !usize {
         if (input.len == 0) return 0;
         if (input.len < 4) return 3;
 
@@ -119,6 +119,8 @@ pub const Base64 = struct {
                 break;
             }
         }
+
+        return multiple_groups;
     }
     
     pub fn _char_at(self: Base64, index: usize) u8 {

@@ -10,12 +10,16 @@ pub fn main() !void {
     var fba = std.heap.FixedBufferAllocator.init(&memory_buffer);
     const alloc = fba.allocator();
 
-    print("Char at index 29: {c}\n\n", .{base._char_at(29)});
+    // print("Char at index 29: {c}\n\n", .{base._char_at(29)});
 
     const text = "Gamarjobat";
-    const res = try base.encode(alloc, text);
+    print("text: {s}\n", .{text});
 
-    print("res: {s}", .{res});
+    const encoded = try base.encode(alloc, text);
+    print("encoded: {s}\n", .{encoded});
+
+    const decoded = try base.decode(alloc, encoded);
+    print("decoded: {s}\n", .{decoded});
 
     print("\n", .{});
 }
